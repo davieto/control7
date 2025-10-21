@@ -33,7 +33,8 @@ INSTALLED_APPS = [
 
     # Terceiros:
     'rest_framework',
-    'drf_yasg',
+    'drf_yasg',    
+    'rest_framework.authtoken',
 
     # Apps do projeto:
     #'apps.clientes',
@@ -44,6 +45,11 @@ INSTALLED_APPS = [
     #'apps.relatorios',
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
 # ---------------------------------------------------------------
 # Middlewares
 # ---------------------------------------------------------------
