@@ -39,7 +39,7 @@ INSTALLED_APPS = [
 
     # Apps do projeto:
     #'apps.clientes',
-    #'apps.funcionarios',
+    'apps.funcionarios',
     'apps.fornecedores',
     #'apps.produtos',
     #'apps.vendas',
