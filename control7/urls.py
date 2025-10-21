@@ -25,6 +25,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     #Fornecedores
     path('api/', include('apps.fornecedores.urls')),
+    #Funcionarios
+    path('api/', include('apps.funcionarios.urls')),
 
     #URLs de JWT Auth Endpoints
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
