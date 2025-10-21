@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',    
     'rest_framework.authtoken',
+    'corsheaders',
 
     # Apps do projeto:
     #'apps.clientes',
@@ -54,6 +55,7 @@ REST_FRAMEWORK = {
 # Middlewares
 # ---------------------------------------------------------------
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -80,6 +82,15 @@ TEMPLATES = [
     },
 ]
 WSGI_APPLICATION = 'control7.wsgi.application'
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8080',
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 # ---------------------------------------------------------------
 # Banco de Dados (MySQL)
