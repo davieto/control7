@@ -82,18 +82,24 @@ const Fornecedores = () => {
     setDialogOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
+const handleDelete = async (id: number) => {
   if (!confirm("Deseja realmente excluir este fornecedor?")) return;
 
   try {
     await apiFetch(`/fornecedores/${id}/`, { method: "DELETE" });
-    toast.success("Fornecedor excluído!");
-    
-    // Aguarda o refresh da lista do backend
-    await carregarFornecedores();
+
+    toast.success("Fornecedor excluído com sucesso!");
+
+    // Atualiza a lista local imediatamente (experiência rápida)
+    setFornecedores((prev) => prev.filter((f) => f.id !== id));
+
+    // Espera um pouquinho e recarrega a tela inteira 👇
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
 
   } catch (error) {
-    console.error(error);
+    console.error("Erro ao excluir fornecedor:", error);
     toast.error("Erro ao excluir fornecedor");
   }
 };

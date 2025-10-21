@@ -2,7 +2,7 @@
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const res = await fetch(`${API_BASE_URL}${endpoint}`, {
     headers: {
       "Content-Type": "application/json",
       ...options.headers,
@@ -10,10 +10,13 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     ...options,
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || "Erro na requisição");
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(errorText || `Erro HTTP ${res.status}`);
   }
 
-  return response.json();
+  // ✅ não tenta parsear JSON em respostas vazias (DELETE 204)
+  if (res.status === 204) return null;
+
+  return res.json();
 }
