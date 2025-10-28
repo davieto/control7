@@ -1,3 +1,4 @@
+
 from django.contrib import admin
 from django.urls import path, include, re_path
 from rest_framework import permissions
@@ -29,6 +30,11 @@ urlpatterns = [
     path('api/', include('apps.funcionarios.urls')),
     #Produtos
     path('api/', include('apps.produtos.urls')),
+    #Configuracao
+    path("api/configuracoes/", include("apps.configuracao.urls")),
+
+
+
 
     #URLs de JWT Auth Endpoints
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
