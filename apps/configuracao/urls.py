@@ -1,9 +1,9 @@
 from django.urls import path
-from .views import ConfiguracoesUsuarioView, ConfiguracoesSenhaView, ConfiguracoesSistemaView
+
+from .views import UsuarioView, AlterarSenhaView, ConfiguracaoSistemaView
 
 urlpatterns = [
-    path("usuario/", ConfiguracoesUsuarioView.as_view(), name="config_usuario"),
-    path("senha/", ConfiguracoesSenhaView.as_view(), name="config_senha"),
-    path("sistema/", ConfiguracoesSistemaView.as_view(), name="config_sistema"),
-
+    path("configuracoes/usuario/", UsuarioView.as_view(), name="config_usuario"),
+    path("configuracoes/senha/", AlterarSenhaView.as_view(), name="config_senha"),
+    path("configuracoes/sistema/", ConfiguracaoSistemaView.as_view(), name="config_sistema"),
 ]

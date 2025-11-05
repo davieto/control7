@@ -1,7 +1,7 @@
+
 from pathlib import Path
 import environ
 import os
-from datetime import timedelta
 
 # ---------------------------------------------------------------
 # Diretório base do projeto
@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'drf_yasg',    
     'rest_framework.authtoken',
     'corsheaders',
-    'rest_framework_simplejwt',
 
     # Apps do projeto:
     #'apps.clientes',
@@ -53,16 +52,6 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-       'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-}
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),   # ajuste conforme desejar
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-    'ROTATE_REFRESH_TOKENS': False,
-    'AUTH_HEADER_TYPES': ('Bearer',),
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
 # ---------------------------------------------------------------
 # Middlewares

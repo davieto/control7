@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react"; // Importe o useEffect
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,91 +6,142 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Settings, User, Lock } from "lucide-react";
+import { apiFetch } from "@/lib/api"; // 1. Importe sua função de API
+import { toast } from "sonner"; // 2. Importe o toast
 
 const Configuracoes = () => {
-  // Estados para os campos do perfil
-  const [nome, setNome] = useState("Admin");
-  const [email, setEmail] = useState("admin@sistema.com");
+  // Estados para os campos (começam vazios, serão preenchidos pela API)
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
 
-  // Estados para as configurações do sistema
-  const [empresa, setEmpresa] = useState("Minha Empresa LTDA");
-  const [cnpj, setCnpj] = useState("00.000.000/0001-00");
-  const [telefone, setTelefone] = useState("(11) 3456-7890");
-  const [emailCorporativo, setEmailCorporativo] = useState("contato@empresa.com");
+  const [empresa, setEmpresa] = useState("");
+  const [cnpj, setCnpj] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [emailCorporativo, setEmailCorporativo] = useState("");
 
-  // Estados para segurança (senha)
   const [senhaAtual, setSenhaAtual] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
 
-  // Função para salvar perfil
+  // 3. Função para carregar os dados do banco
+  const carregarDados = async () => {
+    try {
+      // (Seu backend precisa ter um método GET para estas rotas)
+      const perfilData = await apiFetch("/configuracoes/usuario/");
+      const sistemaData = await apiFetch("/configuracoes/sistema/");
+
+      if (perfilData) {
+        //  Ajuste os campos aqui para bater com o seu Serializer do Django
+        // O User model do Django usa 'first_name' ou 'username'
+        setNome(perfilData.first_name || perfilData.username || "");
+        setEmail(perfilData.email || "");
+      }
+      if (sistemaData) {
+        setEmpresa(sistemaData.nome_empresa || "");
+        setCnpj(sistemaData.cnpj || "");
+        setTelefone(sistemaData.telefone || "");
+        setEmailCorporativo(sistemaData.email_corporativo || "");
+      }
+    } catch (error) {
+      console.error("Erro ao carregar configurações:", error);
+      toast.error("Não foi possível carregar os dados das configurações.");
+    }
+  };
+
+  // 4. Roda a função 'carregarDados' quando o componente é montado
+  useEffect(() => {
+    carregarDados();
+  }, []);
+
+  // --- Funções de Salvamento Refatoradas ---
+
   const handleSalvarPerfil = async () => {
     try {
-      const response = await fetch("api/configuracoes/usuario/", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, email }),
+      //  Use os campos que o seu UsuarioSerializer espera!
+      const payload = {
+        first_name: nome, // Mapeia 'nome' do frontend para 'first_name' do Django
+        email: email,
+      };
+
+      await apiFetch("/configuracoes/usuario/", {
+        method: "PUT",
+        body: JSON.stringify(payload),
       });
-      if (response.ok) {
-        alert("Alterações salvas com sucesso!");
-      } else {
-        alert("Erro ao salvar as alterações.");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Erro ao se conectar ao servidor.");
+      toast.success("Perfil atualizado com sucesso!");
+    } catch (error: any) {
+      console.error("Erro ao salvar perfil:", error);
+      const errorMessage = error.response?.data?.detail || "Erro ao salvar o perfil.";
+      toast.error(errorMessage);
     }
   };
 
-  // Função para salvar as configurações do sistema
   const handleSalvarSistema = async () => {
     try {
-      const response = await fetch("/configuracoes/sistema/", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ empresa, cnpj, telefone, emailCorporativo }),
+      // Mapeia os estados do frontend para os campos do Serializer do Django
+      const payload = {
+        nome_empresa: empresa,
+        cnpj: cnpj,
+        telefone: telefone,
+        email_corporativo: emailCorporativo,
+      };
+
+      await apiFetch("/configuracoes/sistema/", {
+        method: "PUT",
+        body: JSON.stringify(payload),
       });
-      if (response.ok) {
-        alert("Configurações do sistema salvas!");
-      } else {
-        alert("Erro ao salvar configurações.");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Erro ao se conectar ao servidor.");
+      toast.success("Configurações do sistema salvas com sucesso!");
+    } catch (error: any) {
+      console.error("Erro ao salvar sistema:", error);
+      const errorMessage = error.response?.data?.detail || "Erro ao salvar as configurações.";
+      toast.error(errorMessage);
     }
   };
 
-  // Função para alterar senha
   const handleAlterarSenha = async () => {
     if (novaSenha !== confirmarSenha) {
-      alert("As senhas não coincidem!");
+      toast.error("As senhas não coincidem!");
       return;
     }
 
     try {
-      const response = await fetch("/configuracoes/senha/", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          senhaAtual,
-          novaSenha,
-        }),
+      // Mapeia os estados do frontend para os campos do Serializer do Django
+      const payload = {
+        senha_atual: senhaAtual,
+        nova_senha: novaSenha,
+        confirmar_senha: confirmarSenha,
+      };
+
+      await apiFetch("/configuracoes/senha/", {
+        method: "PUT", // (Seu views.py espera PATCH)
+        body: JSON.stringify(payload),
       });
-      if (response.ok) {
-        alert("Senha alterada com sucesso!");
-        setSenhaAtual("");
-        setNovaSenha("");
-        setConfirmarSenha("");
-      } else {
-        alert("Erro ao alterar a senha.");
+
+      toast.success("Senha alterada com sucesso!");
+      setSenhaAtual("");
+      setNovaSenha("");
+      setConfirmarSenha("");
+    } catch (error: any) {
+      console.error("Erro ao alterar senha:", error);
+      let errorMessage = "Erro desconhecido ao alterar a senha.";
+      
+      // Tenta extrair a mensagem de erro específica do Django (400 Bad Request)
+      if (error.response && error.response.data) {
+        const errors = error.response.data;
+        // Pega o primeiro erro de validação (ex: "senha_atual": ["Senha incorreta."])
+        const firstErrorKey = Object.keys(errors)[0];
+        if (firstErrorKey && Array.isArray(errors[firstErrorKey])) {
+          errorMessage = errors[firstErrorKey][0];
+        } else if (errors.detail) { // Erro genérico (ex: 401, 403)
+          errorMessage = errors.detail;
+        } else {
+          errorMessage = JSON.stringify(errors);
+        }
       }
-    } catch (error) {
-      console.error(error);
-      alert("Erro ao se conectar ao servidor.");
+      toast.error(`Erro: ${errorMessage}`);
     }
   };
 
+  // O JSX (layout) permanece o mesmo, apenas os botões agora usam a mesma classe
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
@@ -151,7 +202,7 @@ const Configuracoes = () => {
                 <Label>Confirmar Senha</Label>
                 <Input type="password" value={confirmarSenha} onChange={(e) => setConfirmarSenha(e.target.value)} />
               </div>
-              <Button className="w-full" variant="outline" onClick={handleAlterarSenha}>
+              <Button className="w-full bg-gradient-primary" onClick={handleAlterarSenha}>
                 Alterar Senha
               </Button>
             </CardContent>
