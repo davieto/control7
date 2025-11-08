@@ -1,16 +1,16 @@
 from django.db import models
 from django.core.validators import EmailValidator
-from .validators import validar_cnpj
+from .validators import validar_cpf
 
 
 class Cliente(models.Model):
     nome = models.CharField(max_length=100)
 
-    cnpj = models.CharField(
+    cpf = models.CharField(
         max_length=18,
         unique=True,
-        validators=[validar_cnpj],
-        help_text="Digite o CNPJ no formato 00.000.000/0000-00"
+        validators=[validar_cpf],
+        help_text="Digite o CPF no formato 000.000.000-00"
     )
 
     contato_comercial = models.CharField(max_length=100, blank=True, null=True)
