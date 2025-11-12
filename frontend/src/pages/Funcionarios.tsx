@@ -93,14 +93,15 @@ const Configuracoes = () => {
       console.error("Erro ao salvar sistema:", error);
       toast.error("Erro ao salvar as configurações do sistema.");
     }
-  };
-
-  // Função para alterar senha (usando apiFetch e toast)
-  const handleAlterarSenha = async () => {
-    if (novaSenha !== confirmarSenha) {
-      toast.error("As senhas não coincidem!"); // Use toast
-      return;
-    }
+    
+    setDialogOpen(false);
+    setEditing(null);
+    setTimeout(() => window.location.reload(), 800);
+  } catch (error) {
+    console.error(error);
+    toast.error("Erro ao salvar funcionário");
+  }
+};
 
     try {
       // Use os nomes de campo esperados pelo AlterarSenhaSerializer
