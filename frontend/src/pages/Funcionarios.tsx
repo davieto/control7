@@ -50,7 +50,7 @@ const Funcionarios = () => {
       });
       toast.success("Funcionário cadastrado com sucesso!");
     }
-
+    
     setDialogOpen(false);
     setEditing(null);
     setTimeout(() => window.location.reload(), 800);
