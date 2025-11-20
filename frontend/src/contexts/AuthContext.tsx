@@ -1,5 +1,5 @@
-import React, { createContext, useEffect, useState, ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { createContext, useEffect, useState, ReactNode } from "react"; 
+// REMOVIDO: import { useNavigate } from "react-router-dom"; <--- REMOVIDO
 
 type AuthContextType = {
   isAuthenticated: boolean;
@@ -13,26 +13,33 @@ export const AuthContext = createContext<AuthContextType>({
   logout: () => {},
 });
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem("token"));
-  const navigate = useNavigate();
+// Tipagem correta para o children
+export function AuthProvider({ children }: { children: ReactNode }) { 
+  // Padronizado: Busca por 'access_token'
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem("access_token"));
+  
+  // REMOVIDO: const navigate = useNavigate(); <--- REMOVIDO
 
   useEffect(() => {
-    setIsAuthenticated(!!localStorage.getItem("token"));
+    setIsAuthenticated(!!localStorage.getItem("access_token"));
   }, []);
 
   function login(accessToken: string, refreshToken?: string) {
-    localStorage.setItem("token", accessToken);
+    // Padronizado: Salva como 'access_token'
+    localStorage.setItem("access_token", accessToken);
+    
     if (refreshToken) localStorage.setItem("refresh_token", refreshToken);
+    
     setIsAuthenticated(true);
-    navigate("/");
+    // REMOVIDO: navigate("/"); <--- REMOVIDO
   }
 
   function logout() {
-    localStorage.removeItem("token");
+    // Padronizado: Remove os tokens
+    localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     setIsAuthenticated(false);
-    navigate("/login");
+    // REMOVIDO: navigate("/login"); <--- REMOVIDO
   }
 
   return (

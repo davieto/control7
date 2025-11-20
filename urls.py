@@ -1,4 +1,3 @@
-
 from django.contrib import admin
 from django.urls import path, include, re_path
 from rest_framework import permissions
@@ -9,6 +8,16 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+
+# 🎯 IMPORTAÇÕES NECESSÁRIAS PARA O ROUTER
+from rest_framework.routers import DefaultRouter
+from apps.clientes.views import ClienteViewSet # Supondo que você criou este ViewSet
+from apps.vendas.views import VendaViewSet # Supondo que você criou este ViewSet
+
+# 🎯 CONFIGURAÇÃO DO ROUTER
+router = DefaultRouter()
+router.register(r'clientes', ClienteViewSet, basename='cliente')
+router.register(r'vendas', VendaViewSet, basename='venda')
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -24,23 +33,27 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('', RedirectView.as_view(url='swagger/', permanent=False)),
     path('admin/', admin.site.urls),
-    #Fornecedores
+    
+    # 🎯 ROTAS DO DRF ROUTER: Inclui /api/clientes/ e /api/vendas/
+    path('api/', include(router.urls)), 
+    
+    # Fornecedores (Se eles usarem views.py e urls.py separados, mantenha. Se for ViewSet, remova a linha abaixo e adicione ao router)
     path('api/', include('apps.fornecedores.urls')),
-    #Funcionarios
+    # Funcionarios
     path('api/', include('apps.funcionarios.urls')),
-    #Produtos
+    # Produtos
     path('api/', include('apps.produtos.urls')),
-    #Configuracao
+    # Configuracao
     path("api/", include("apps.configuracao.urls")),
+    
+    # Dashboard
+    path('api/dashboard/', include('apps.dashboard.urls')),
 
-
-
-
-    #URLs de JWT Auth Endpoints
+    # URLs de JWT Auth Endpoints
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    #URLs de documentação
+    # URLs de documentação
     re_path(r'^swagger/?$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/?$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]

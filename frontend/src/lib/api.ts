@@ -1,3 +1,5 @@
+// frontend/src/lib/api.ts
+
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
@@ -5,36 +7,38 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   headers.set("Content-Type", "application/json");
   headers.set("Accept", "application/json");
 
-  const token = localStorage.getItem("token"); 
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
+  // 🔑 CORRIGIDO: Busca pela chave padronizada 'access_token'
+  const accessToken = localStorage.getItem("access_token"); 
+  
+  if (accessToken) {
+    headers.set("Authorization", `Bearer ${accessToken}`);
   }
 
-  const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+  // Garante que o endpoint tenha uma barra inicial, se necessário.
+  const finalEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+
+  const res = await fetch(`${API_BASE_URL}${finalEndpoint}`, {
     ...options,
     headers: headers,
   });
 
-if (!res.ok) {
-  let errorData;
+  if (!res.ok) {
+    let errorData;
 
-  try {
-    // Tenta ler como JSON
-    errorData = await res.json();
-  } catch {
-    // Se falhar (não é JSON), lê como texto
-    const text = await res.text();
-    errorData = { detail: text || `Erro HTTP ${res.status}` };
-  }
-
-  // Lança o erro em formato consistente
-  throw {
-    response: {
-      status: res.status,
-      data: errorData
+    try {
+      errorData = await res.json();
+    } catch {
+      const text = await res.text();
+      errorData = { detail: text || `Erro HTTP ${res.status}` };
     }
-  };
-}
+
+    throw {
+      response: {
+        status: res.status,
+        data: errorData
+      }
+    };
+  }
 
   if (res.status === 204) return null;
 

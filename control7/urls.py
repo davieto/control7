@@ -1,4 +1,3 @@
-
 from django.contrib import admin
 from django.urls import path, include, re_path
 from rest_framework import permissions
@@ -24,25 +23,26 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('', RedirectView.as_view(url='swagger/', permanent=False)),
     path('admin/', admin.site.urls),
-    #Fornecedores
+    
+    # 🎯 CORREÇÃO: A Dashboard foi movida para ter o prefixo 'api/'
+    path('api/dashboard/', include('apps.dashboard.urls')),
+
+    # Fornecedores
     path('api/', include('apps.fornecedores.urls')),
-    #Funcionarios
+    # Funcionarios
     path('api/', include('apps.funcionarios.urls')),
-    #Produtos
+    # Produtos
     path('api/', include('apps.produtos.urls')),
-    #Configuracao
+    # Configuracao
     path("api/", include("apps.configuracao.urls")),
-
-
-
-    #Clientes
+    # Clientes
     path('api/', include('apps.clientes.urls')),
 
-    #URLs de JWT Auth Endpoints
+    # URLs de JWT Auth Endpoints (API)
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    #URLs de documentação
+    # URLs de documentação
     re_path(r'^swagger/?$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/?$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
