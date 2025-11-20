@@ -59,9 +59,11 @@ const Configuracoes = () => {
     try {
       //  Use os campos que o seu UsuarioSerializer espera!
       const payload = {
-        first_name: nome, // Mapeia 'nome' do frontend para 'first_name' do Django
-        email: email,
-      };
+  first_name: nome,
+  email: email,
+  username: email,
+}
+
 
       await apiFetch("/configuracoes/usuario/", {
         method: "PUT",

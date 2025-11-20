@@ -15,7 +15,7 @@ const funcionarioSchema = z.object({
   email: z.string().email("Email inválido"),
   telefone: z.string().min(10, "Telefone inválido"),
   cargo: z.string().min(3, "Cargo obrigatório"),
-  nivelAcesso: z.enum(["admin", "vendedor", "gerente", "financeiro"]),
+  nivelAcesso: z.enum(["admin", "usuario"]),
   senha: z.string().min(6, "Senha deve ter no mínimo 6 caracteres").optional(),
 });
 
@@ -102,9 +102,8 @@ export const FuncionarioDialog = ({ open, onOpenChange, funcionario, onSave }: F
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">Administrador</SelectItem>
-                  <SelectItem value="gerente">Gerente</SelectItem>
-                  <SelectItem value="vendedor">Vendedor</SelectItem>
-                  <SelectItem value="financeiro">Financeiro</SelectItem>
+
+                  <SelectItem value="usuario">Usuário</SelectItem>
                 </SelectContent>
               </Select>
               {errors.nivelAcesso && <p className="text-sm text-destructive">{errors.nivelAcesso.message}</p>}
