@@ -1,76 +1,152 @@
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework import status, permissions, generics
+# from rest_framework.permissions import IsAuthenticated
+
+# from django.contrib.auth.models import User
+
+# # Models
+# from apps.fornecedores.models import Fornecedor
+# from apps.funcionarios.models import Funcionario
+
+# # Serializers
+# from apps.fornecedores.serializers import FornecedorSerializer
+# from .serializers import UsuarioSerializer, AlterarSenhaSerializer
+
+
+# # ============================================================
+# # PERFIL DO USUÁRIO (já estava certo, apenas reorganizei)
+# # ============================================================
+# class UsuarioView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+#         serializer = UsuarioSerializer(request.user)
+#         return Response(serializer.data)
+
+#     def put(self, request):
+#         serializer = UsuarioSerializer(
+#             request.user,
+#             data=request.data,
+#             partial=True
+#         )
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data)
+
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# # ============================================================
+# # ALTERAR SENHA
+# # ============================================================
+# class AlterarSenhaView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def put(self, request):
+#         serializer = AlterarSenhaSerializer(
+#             data=request.data,
+#             context={"request": request}
+#         )
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response({"mensagem": "Senha alterada com sucesso!"})
+
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# # ============================================================
+# # CONFIGURAÇÕES DO SISTEMA (FORNECEDORES)
+# # 100% REST — lista, cria, edita e deleta vários fornecedores
+# # ============================================================
+
+# # LISTAR + CRIAR
+# class FornecedorListCreateView(generics.ListCreateAPIView):
+#     queryset = Fornecedor.objects.all()
+#     serializer_class = FornecedorSerializer
+#     permission_classes = [IsAuthenticated]  # troque para AllowAny se quiser liberar
+
+
+# # BUSCAR + EDITAR + DELETAR
+# class FornecedorDetailView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Fornecedor.objects.all()
+#     serializer_class = FornecedorSerializer
+#     permission_classes = [IsAuthenticated]
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework import status, permissions, generics
+from rest_framework.permissions import IsAuthenticated
+
 from django.contrib.auth.models import User
 
+# Models
 from apps.fornecedores.models import Fornecedor
+from apps.funcionarios.models import Funcionario
+
+# Serializers
 from apps.fornecedores.serializers import FornecedorSerializer
+from .serializers import UsuarioSerializer, AlterarSenhaSerializer
 
-from .serializers import UsuarioSerializer, AlterarSenhaSerializer  # seus serializers já criados
 
-
+# ============================================================
+# PERFIL DO USUÁRIO
+# ============================================================
 class UsuarioView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         serializer = UsuarioSerializer(request.user)
         return Response(serializer.data)
 
     def put(self, request):
-        serializer = UsuarioSerializer(request.user, data=request.data, partial=True)
+        print(f"--- Atualizando Usuário: {request.user} ---")
+        # partial=True permite atualizar só o nome, só a senha, etc.
+        serializer = UsuarioSerializer(
+            request.user, 
+            data=request.data, 
+            partial=True
+        )
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
+        
+        print(f"Erro Validação User: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# ============================================================
+# ALTERAR SENHA
+# ============================================================
 class AlterarSenhaView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def put(self, request):
-        serializer = AlterarSenhaSerializer(data=request.data, context={"request": request})
-        if serializer.is_valid():
-            user = request.user
-            user.set_password(serializer.validated_data["nova_senha"])
-            user.save()
-            return Response({"mensagem": "Senha alterada com sucesso!"})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ConfiguracaoSistemaView(APIView):
-    """
-    Atualiza os dados "de sistema" que estão salvos no model Fornecedor.
-    Recomendação: escolha um registro Fornecedor que represente sua empresa (ex: fornecedor.id == X).
-    A API aceita o campo 'fornecedor_id' no body. Se não enviado, usa o primeiro Fornecedor().
-    """
-
-    permission_classes = [permissions.AllowAny]
-
-    def get_fornecedor(self, fornecedor_id=None):
-        if fornecedor_id:
-            try:
-                return Fornecedor.objects.get(id=fornecedor_id)
-            except Fornecedor.DoesNotExist:
-                return None
-        return Fornecedor.objects.first()
-
-    def get(self, request):
-        fornecedor_id = request.query_params.get("fornecedor_id")
-        fornecedor = self.get_fornecedor(fornecedor_id)
-        if not fornecedor:
-            return Response({"erro": "Fornecedor não encontrado."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = FornecedorSerializer(fornecedor)
-        return Response(serializer.data)
-
-    def put(self, request):
-        fornecedor_id = request.data.get("fornecedor_id")
-        fornecedor = self.get_fornecedor(fornecedor_id)
-        if not fornecedor:
-            return Response({"erro": "Fornecedor não encontrado."}, status=status.HTTP_404_NOT_FOUND)
-
-        # atualiza qualquer campo válido do Fornecedor (o serializer usa fields='__all__')
-        serializer = FornecedorSerializer(fornecedor, data=request.data, partial=True)
+        serializer = AlterarSenhaSerializer(
+            data=request.data, 
+            context={"request": request}
+        )
         if serializer.is_valid():
             serializer.save()
-            return Response({"mensagem": "Configurações do sistema atualizadas com sucesso!", "fornecedor": serializer.data})
+            return Response({"mensagem": "Senha alterada com sucesso!"})
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ============================================================
+# CONFIGURAÇÕES DO SISTEMA (FORNECEDORES)
+# ============================================================
+
+# 1. LISTAR (Para o Dropdown) + CRIAR (Novo Fornecedor)
+# Rota sugerida: /api/configuracao/fornecedores/
+class FornecedorListCreateView(generics.ListCreateAPIView):
+    queryset = Fornecedor.objects.all().order_by('nome') # Ordenado por nome ajuda no dropdown
+    serializer_class = FornecedorSerializer
+    permission_classes = [IsAuthenticated] 
+
+
+# 2. BUSCAR UM (Detalhes) + EDITAR (Atualizar) + DELETAR
+# Rota sugerida: /api/configuracao/fornecedores/<int:pk>/
+class FornecedorDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Fornecedor.objects.all()
+    serializer_class = FornecedorSerializer
+    permission_classes = [IsAuthenticated]

@@ -15,9 +15,8 @@ def validar_cpf(cpf):
 class Funcionario(models.Model):
     NIVEL_ACESSO_CHOICES = [
         ('admin', 'Administrador'),
-        ('gerente', 'Gerente'),
-        ('vendedor', 'Vendedor'),
-        ('financeiro', 'Financeiro'),
+        ('usuario', 'Usuário'),
+        
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="funcionario")
