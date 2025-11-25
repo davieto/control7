@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/api";
 import { Plus, Search, Eye } from "lucide-react";
 import { VendaDialog } from "@/components/forms/VendaDialog";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -16,35 +17,100 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
-const mockVendas = [
-  { id: "#12345", data: "2025-10-20", cliente: "João Silva", total: 1234.56, status: "Pago", vendedor: "Admin" },
-  { id: "#12344", data: "2025-10-20", cliente: "Maria Santos", total: 856.90, status: "Pendente", vendedor: "Admin" },
-  { id: "#12343", data: "2025-10-19", cliente: "Pedro Costa", total: 2450.00, status: "Pago", vendedor: "Admin" },
-  { id: "#12342", data: "2025-10-19", cliente: "Ana Oliveira", total: 678.30, status: "Pago", vendedor: "Admin" },
-];
-
-const mockClientes = [
-  { id: 1, nome: "João Silva" },
-  { id: 2, nome: "Maria Santos" },
-  { id: 3, nome: "Pedro Costa" },
-];
-
-const mockProdutos = [
-  { id: 1, descricao: "Notebook Dell", preco: 3500.00, estoque: 15 },
-  { id: 2, descricao: "Mouse Logitech", preco: 89.90, estoque: 45 },
-  { id: 3, descricao: "Teclado Mecânico", preco: 450.00, estoque: 8 },
-];
+type Cliente = { id: number; nome: string };
+type Produto = { id: number; descricao: string; preco: number; estoque: number };
+type Funcionario = { id: number; nome?: string; user?: { first_name?: string } };
+type ItemVenda = { id: number; produto: Produto; quantidade: number; preco_unitario: number; subtotal: number };
+type Venda = {
+  id: number;
+  data_venda: string;
+  cliente: Cliente;
+  funcionario?: Funcionario;
+  total: number;
+  status: string;
+  forma_pagamento: string;
+  itens?: ItemVenda[];
+};
 
 const Vendas = () => {
+  const [vendas, setVendas] = useState<Venda[]>([]);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [funcionarios, setFuncionarios] = useState<Funcionario[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const handleNew = () => {
-    setDialogOpen(true);
+  useEffect(() => { fetchData(); }, []);
+
+  const fetchData = async () => {
+    try {
+      const [vList, cList, pList, fList] = await Promise.all([
+        apiFetch('/vendas/').catch(() => []),
+        apiFetch('/clientes/').catch(() => []),
+        apiFetch('/produtos/').catch(() => []),
+        apiFetch('/funcionarios/').catch(() => []),
+      ]);
+
+      setVendas(vList || []);
+      setClientes(cList || []);
+      setProdutos(pList || []);
+      setFuncionarios(fList || []);
+    } catch (err) {
+      console.error('Erro ao buscar dados de vendas:', err);
+    }
   };
 
-  const handleSave = (data: any) => {
-    console.log("Salvando venda:", data);
+  const handleNew = () => setDialogOpen(true);
+
+  const handleSave = async (data: any) => {
+    // data: { cliente, observacoes, formaPagamento, itens, total }
+    try {
+      const funcionarioId = funcionarios?.[0]?.id || 1;
+      const clienteId = parseInt(data.cliente, 10);
+      if (isNaN(clienteId)) {
+        console.error('Cliente inválido no payload:', data.cliente);
+        try { (await import('sonner')).toast.error('Selecione um cliente válido antes de salvar.'); } catch {}
+        return;
+      }
+
+      const payload = {
+        cliente_id: clienteId,
+        funcionario_id: funcionarioId,
+        status: data.status || 'pendente',
+        forma_pagamento: data.formaPagamento,
+        observacoes: data.observacoes || '',
+        itens: data.itens.map((i: any) => ({ produto_id: parseInt(i.produtoId, 10), quantidade: i.quantidade })),
+      };
+
+      console.log('Enviando payload venda:', payload);
+
+      await apiFetch('/vendas/', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      // refresh
+      await fetchData();
+      setDialogOpen(false);
+    } catch (err) {
+      console.error('Erro no handleSave:', err);
+      // apiFetch lança { response: { status, data } }
+      if (err && err.response) {
+        const status = err.response.status;
+        const data = err.response.data;
+        console.error('API error status:', status, 'data:', data);
+        try { console.error('API error detail (stringified):', JSON.stringify(data, null, 2)); } catch {}
+        const detail = data?.detail || (typeof data === 'string' ? data : (typeof data === 'object' ? JSON.stringify(data) : String(data)));
+        // mostrar toast com detalhe
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        window.toast?.error?.(`Erro ao salvar venda: ${detail}`);
+        // também exibir sonner
+        try { (await import('sonner')).toast.error(`Erro ao salvar venda: ${detail}`); } catch {}
+        return;
+      }
+      try { (await import('sonner')).toast.error('Erro ao salvar venda'); } catch {}
+    }
   };
 
   return (
@@ -91,17 +157,15 @@ const Vendas = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockVendas.map((venda) => (
+                {vendas.map((venda) => (
                   <TableRow key={venda.id} className="hover:bg-muted/30 transition-colors">
-                    <TableCell className="font-mono font-medium">{venda.id}</TableCell>
-                    <TableCell>{new Date(venda.data).toLocaleDateString('pt-BR')}</TableCell>
-                    <TableCell className="font-medium">{venda.cliente}</TableCell>
-                    <TableCell>{venda.vendedor}</TableCell>
-                    <TableCell className="text-right font-semibold">
-                      R$ {venda.total.toFixed(2)}
-                    </TableCell>
+                    <TableCell className="font-mono font-medium">#{venda.id}</TableCell>
+                    <TableCell>{new Date(venda.data_venda).toLocaleDateString('pt-BR')}</TableCell>
+                    <TableCell className="font-medium">{venda.cliente?.nome}</TableCell>
+                    <TableCell>{venda.funcionario?.nome || venda.funcionario?.user?.first_name || '-'}</TableCell>
+                    <TableCell className="text-right font-semibold">R$ {Number(venda.total).toFixed(2)}</TableCell>
                     <TableCell>
-                      <Badge variant={venda.status === "Pago" ? "default" : "secondary"}>
+                      <Badge variant={venda.status === "pago" ? "default" : "secondary"}>
                         {venda.status}
                       </Badge>
                     </TableCell>
@@ -121,12 +185,13 @@ const Vendas = () => {
       <VendaDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        clientes={mockClientes}
-        produtos={mockProdutos}
+        clientes={clientes}
+        produtos={produtos}
         onSave={handleSave}
       />
     </div>
   );
+
 };
 
 export default Vendas;
