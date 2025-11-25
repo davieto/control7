@@ -34,22 +34,24 @@ urlpatterns = [
     path('', RedirectView.as_view(url='swagger/', permanent=False)),
     path('admin/', admin.site.urls),
     
-    # 🎯 ROTAS DO DRF ROUTER: Inclui /api/clientes/ e /api/vendas/
+    # 🎯 1. CORREÇÃO PRINCIPAL: Inclui o router com o prefixo 'api/'.
     path('api/', include(router.urls)), 
     
-    # Fornecedores (Se eles usarem views.py e urls.py separados, mantenha. Se for ViewSet, remova a linha abaixo e adicione ao router)
-    path('api/', include('apps.fornecedores.urls')),
-    # Funcionarios
-    path('api/', include('apps.funcionarios.urls')),
-    # Produtos
-    path('api/', include('apps.produtos.urls')),
-    # Configuracao
+    # 2. As demais rotas que usam o mesmo prefixo 'api/' devem ter o prefixo 'api/' removido do path()
+    # E o arquivo de urls interno (do app) DEVE começar com a rota, sem o "api/".
+
+    # Exemplo: Se apps/fornecedores/urls.py contém 'path("fornecedores/", ...)', então use:
+    path('api/', include('apps.fornecedores.urls')), # Mantenha por enquanto
+    path('api/', include('apps.funcionarios.urls')), # Mantenha por enquanto
+    path('api/', include('apps.produtos.urls')), # Mantenha por enquanto
+    
+    # Dashboard (corrigido para não duplicar o 'api/')
+    path('api/dashboard/', include('apps.dashboard.urls')),
+    
+    # Configuração: Se for uma view específica, pode gerar conflito com path('api/', include(...))
     path("api/", include("apps.configuracao.urls")),
     
-    # Dashboard
-    path('api/dashboard/', include('apps.dashboard.urls')),
-
-    # URLs de JWT Auth Endpoints
+    # URLs de JWT Auth Endpoints (mantenha a sintaxe atual)
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 

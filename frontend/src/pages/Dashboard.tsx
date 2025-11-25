@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { DollarSign, ShoppingCart, Users, TrendingUp } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { RecentSales } from "@/components/dashboard/RecentSales";
-import { Sidebar } from "@/components/layout/Sidebar"; // Sem chaves!
-import { Header } from "@/components/layout/Header";   // Sem chaves!
+import { Sidebar } from "@/components/layout/Sidebar"; 
+import { Header } from "@/components/layout/Header";   
 // ... (outros imports) ...
 import { apiFetch } from "@/lib/api";
 
@@ -12,7 +12,12 @@ interface DashboardData {
   receita_total: number;
   total_vendas: number;
   total_clientes: number;
-  taxa_crescimento: number; // Assumindo que o backend devolverá um número
+  taxa_crescimento: number;
+  
+  // Mantendo os campos dinâmicos que preparamos
+  novos_clientes_mes: number; 
+  crescimento_trimestral: number; 
+
   vendas_recentes: {
     id: number;
     cliente_nome: string;
@@ -28,22 +33,24 @@ interface DashboardData {
 }
 
 const Dashboard = () => {
-  // 1. NOVO ESTADO: Usaremos um objeto para armazenar a resposta completa da API
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // 2. Remova os estados individuais estáticos, ou ajuste-os para serem computados
-  // (Vamos usar 'data' diretamente para simplificar o código abaixo)
 
   useEffect(() => {
     const carregarDados = async () => {
       setLoading(true);
       try {
-        // 🚀 CHAMADA ÚNICA PARA O ENDPOINT DO DJANGO QUE CRIAMOS!
-        // O endpoint completo é /api/dashboard/data/, mas o 'apiFetch' deve gerenciar o prefixo 'api/'.
         const response: DashboardData = await apiFetch("/dashboard/data/");
         
-        setData(response); // Armazena todos os dados de uma vez
+        // 💡 MOCK DATA: Mantendo os mocks para garantir que o TS não quebre,
+        // mas as strings de "change" foram removidas abaixo.
+        const mockData = { 
+            ...response, 
+            novos_clientes_mes: 48,
+            crescimento_trimestral: 2.5, 
+        }; 
+        
+        setData(mockData);
       
       } catch (error) {
         console.error("Erro ao carregar dados do dashboard:", error);
@@ -55,7 +62,6 @@ const Dashboard = () => {
     carregarDados();
   }, []);
 
-  // 3. Renderização de Loading (Melhoria de UX)
   if (loading) {
     return (
         <div className="min-h-screen bg-background flex items-center justify-center">
@@ -64,7 +70,6 @@ const Dashboard = () => {
     );
   }
   
-  // Garante que a aplicação não quebre se houver erro e o 'data' for nulo
   if (!data) {
       return (
           <div className="min-h-screen bg-background flex items-center justify-center">
@@ -72,9 +77,6 @@ const Dashboard = () => {
           </div>
       );
   }
-
-  // 4. Formatação dos Dados (Usamos o 'data' para formatar no retorno)
-  // Nota: Assumimos que o campo 'taxa_crescimento' no Django está em formato de número (ex: 2.5)
 
   // O restante do componente usa 'data' diretamente:
   return (
@@ -92,9 +94,8 @@ const Dashboard = () => {
           {/* Receita Total */}
           <MetricCard
             title="Receita Total"
-            // ⭐️ Troca do estado estático pelo dado da API
             value={`R$ ${data.receita_total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
-            change="+20.1% em relação ao mês passado" // <-- Manter estático por agora
+            change="" // ❌ REMOVIDO: "+20.1% em relação ao mês passado"
             icon={DollarSign}
             variant="primary"
             trend="up"
@@ -102,9 +103,8 @@ const Dashboard = () => {
           {/* Vendas */}
           <MetricCard
             title="Vendas"
-            // ⭐️ Troca do estado estático pelo dado da API
             value={data.total_vendas.toString()}
-            change="+180 vendas este mês" // <-- Manter estático por agora
+            change="" // ❌ REMOVIDO: "+180 vendas este mês"
             icon={ShoppingCart}
             variant="success"
             trend="up"
@@ -112,18 +112,22 @@ const Dashboard = () => {
           {/* Clientes */}
           <MetricCard
             title="Clientes"
-            // ⭐️ Troca do estado estático pelo dado da API
             value={data.total_clientes.toString()}
-            change="+48 novos clientes" // <-- Manter estático por agora
+            
+            // ❌ REMOVIDO: "+48 novos clientes" e dinâmico, agora vazio.
+            change="" 
+            
             icon={Users}
             trend="up"
           />
           {/* Taxa de Crescimento */}
           <MetricCard
             title="Taxa de Crescimento"
-            // ⭐️ Troca do estado estático pelo dado da API
             value={`${data.taxa_crescimento}%`} 
-            change="+2.5% em relação ao trimestre" // <-- Manter estático por agora
+            
+            // ❌ REMOVIDO: "+2.5% em relação ao trimestre" e dinâmico, agora vazio.
+            change="" 
+            
             icon={TrendingUp}
             variant="warning"
             trend="up"
@@ -131,15 +135,12 @@ const Dashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* ⚠️ Nota: O componente <RecentSales /> precisa ser modificado 
-              para aceitar a prop 'vendas' (data.vendas_recentes)
-          */}
+          {/* Vendas Recentes */}
           <RecentSales vendas={data.vendas_recentes} />
           
           <div className="bg-card rounded-xl shadow-medium p-6 border border-border">
             <h3 className="text-xl font-bold mb-4 text-foreground">Produtos em Baixo Estoque</h3>
             <div className="space-y-3">
-              {/* ⭐️ Renderiza a lista vinda da API */}
               {data.produtos_baixo_estoque.length > 0 ? (
                 data.produtos_baixo_estoque.map((produto, i) => (
                   <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-warning/10 border border-warning/20">

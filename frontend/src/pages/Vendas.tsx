@@ -16,6 +16,9 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
+// 🎯 CORREÇÃO: Importa a função apiFetch (que realmente existe no seu api.ts)
+import { apiFetch } from "@/lib/api"; 
+
 const mockVendas = [
   { id: "#12345", data: "2025-10-20", cliente: "João Silva", total: 1234.56, status: "Pago", vendedor: "Admin" },
   { id: "#12344", data: "2025-10-20", cliente: "Maria Santos", total: 856.90, status: "Pendente", vendedor: "Admin" },
@@ -43,8 +46,47 @@ const Vendas = () => {
     setDialogOpen(true);
   };
 
-  const handleSave = (data: any) => {
-    console.log("Salvando venda:", data);
+  // 🎯 FUNÇÃO CORRIGIDA: Implementa a chamada POST usando apiFetch e corrige o mapeamento dos itens
+  const handleSave = async (data: any) => {
+    console.log("Salvando venda:", data); 
+
+    // Mapeia os dados do frontend para o formato snake_case esperado pelo Django
+    const vendaPayload = {
+        cliente: Number(data.cliente), 
+        forma_pagamento: data.formaPagamento,
+        observacoes: data.observacoes,
+        valor: data.total, 
+        
+        // ✅ CORREÇÃO APLICADA: Usa (data.items ?? []) para garantir que é um array vazio se data.items for null ou undefined.
+        itens_venda: (data.items ?? []).map((item: any) => ({
+            produto: Number(item.produtoId), 
+            quantidade: item.quantidade,
+            valor_unitario: item.precoUnitario,
+        })),
+    };
+
+    try {
+        // Usa apiFetch com o método POST e serializa o corpo da requisição
+        const response = await apiFetch('/vendas/', {
+            method: 'POST',
+            body: JSON.stringify(vendaPayload), 
+        });
+        
+        console.log("Venda salva com sucesso:", response);
+        alert("Venda registrada com sucesso!");
+        setDialogOpen(false);
+        // Se a listagem fosse real, aqui seria chamada a função para atualizar a lista: fetchDataVendas(); 
+
+    } catch (error: any) {
+        console.error("Erro ao salvar venda:", error.response || error);
+        
+        // Formata e exibe o erro de validação do Django
+        const errorMessage = error.response?.data 
+            ? JSON.stringify(error.response.data, null, 2)
+            : error.message;
+
+        alert(`Erro ao salvar venda:\n${errorMessage}`);
+    }
   };
 
   return (
