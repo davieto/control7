@@ -3,5 +3,5 @@ from .models import Fornecedor
 
 @admin.register(Fornecedor)
 class FornecedorAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'cnpj', 'email', 'telefone', 'criado_em')
-    search_fields = ('nome', 'cnpj')
+    list_display = ("nome", "cnpj", "contato_comercial", "email", "telefone", "criado_em")
+    search_fields = ("nome", "cnpj", "contato_comercial")

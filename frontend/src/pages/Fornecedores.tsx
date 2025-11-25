@@ -152,6 +152,7 @@ const handleDelete = async (id: number) => {
                 </TableHeader>
                 <TableBody>
                   {fornecedores
+<<<<<<< HEAD
                     .filter((f) => {
                       const q = searchTerm.toLowerCase();
                       return (
@@ -162,6 +163,11 @@ const handleDelete = async (id: number) => {
                         (f.email || "").toLowerCase().includes(q)
                       );
                     })
+=======
+                    .filter((f) =>
+                      f.nome.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+>>>>>>> main
                     .map((fornecedor) => (
                       <TableRow
                         key={fornecedor.id}

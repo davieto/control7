@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import { useEffect } from "react";
+=======
+>>>>>>> main
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -14,7 +17,11 @@ const fornecedorSchema = z.object({
   cnpj: z.string().refine((val) => validateCNPJ(val), "CNPJ inválido"),
   email: z.string().email("Email inválido"),
   telefone: z.string().min(10, "Telefone inválido"),
+<<<<<<< HEAD
   contato_comercial: z.string().min(3, "Nome do contato inválido"),
+=======
+  contatoComercial: z.string().min(3, "Nome do contato inválido"),
+>>>>>>> main
   cep: z.string().min(8, "CEP inválido"),
   endereco: z.string().min(5, "Endereço inválido"),
   numero: z.string().min(1, "Número obrigatório"),
@@ -34,6 +41,7 @@ interface FornecedorDialogProps {
 }
 
 export const FornecedorDialog = ({ open, onOpenChange, fornecedor, onSave }: FornecedorDialogProps) => {
+<<<<<<< HEAD
   const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<FornecedorFormData>({
     resolver: zodResolver(fornecedorSchema),
     defaultValues: {},
@@ -48,6 +56,13 @@ export const FornecedorDialog = ({ open, onOpenChange, fornecedor, onSave }: For
     }
   }, [fornecedor, reset]);
 
+=======
+  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FornecedorFormData>({
+    resolver: zodResolver(fornecedorSchema),
+    defaultValues: fornecedor || {},
+  });
+
+>>>>>>> main
   const cnpj = watch("cnpj");
   const telefone = watch("telefone");
   const cep = watch("cep");
@@ -85,9 +100,15 @@ export const FornecedorDialog = ({ open, onOpenChange, fornecedor, onSave }: For
             </div>
 
             <div>
+<<<<<<< HEAD
               <Label htmlFor="contato_comercial">Contato Comercial *</Label>
               <Input id="contato_comercial" {...register("contato_comercial" as any)} />
               {errors.contato_comercial && <p className="text-sm text-destructive">{errors.contato_comercial.message}</p>}
+=======
+              <Label htmlFor="contatoComercial">Contato Comercial *</Label>
+              <Input id="contatoComercial" {...register("contatoComercial")} />
+              {errors.contatoComercial && <p className="text-sm text-destructive">{errors.contatoComercial.message}</p>}
+>>>>>>> main
             </div>
 
             <div>

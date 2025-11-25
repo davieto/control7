@@ -1,6 +1,7 @@
 from pathlib import Path
 import environ
 import os
+from datetime import timedelta
 
 # ---------------------------------------------------------------
 # Diretório base do projeto
@@ -33,21 +34,41 @@ INSTALLED_APPS = [
 
     # Terceiros:
     'rest_framework',
-    'drf_yasg',
+    'drf_yasg',    
+    'rest_framework.authtoken',
+    'corsheaders',
+    'rest_framework_simplejwt',
 
     # Apps do projeto:
-    #'apps.clientes',
-    #'apps.funcionarios',
+    'apps.clientes',
+    'apps.funcionarios',
     'apps.fornecedores',
-    #'apps.produtos',
-    #'apps.vendas',
+    'apps.produtos',
+    'apps.configuracao',
+    'apps.vendas',
     #'apps.relatorios',
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+       'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),   # ajuste conforme desejar
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': False,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+}
 # ---------------------------------------------------------------
 # Middlewares
 # ---------------------------------------------------------------
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -74,6 +95,15 @@ TEMPLATES = [
     },
 ]
 WSGI_APPLICATION = 'control7.wsgi.application'
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8080',
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 # ---------------------------------------------------------------
 # Banco de Dados (MySQL)
