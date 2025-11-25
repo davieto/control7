@@ -9,6 +9,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from apps.vendas.views import VendaViewSet
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -30,6 +31,12 @@ urlpatterns = [
     path('api/', include('apps.funcionarios.urls')),
     #Produtos
     path('api/', include('apps.produtos.urls')),
+    # Vendas
+    path('api/', include('apps.vendas.urls')),
+
+    # Explicit endpoints for vendas (fallback)
+    path('api/vendas/', VendaViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('api/vendas/<int:pk>/', VendaViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'})),
     #Configuracao
     path("api/", include("apps.configuracao.urls")),
 

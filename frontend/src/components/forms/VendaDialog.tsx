@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -31,25 +31,58 @@ interface ItemVenda {
 interface VendaDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  clientes: Array<{ id: number; nome: string }>;
-  produtos: Array<{ id: number; descricao: string; preco: number; estoque: number }>;
+  clientes?: Array<{ id: number; nome: string }>;
+  produtos?: Array<{ id: number; descricao: string; preco: number; estoque: number }>;
   onSave: (data: VendaFormData & { itens: ItemVenda[]; total: number }) => void;
 }
 
-export const VendaDialog = ({ open, onOpenChange, clientes, produtos, onSave }: VendaDialogProps) => {
+export const VendaDialog = ({ open, onOpenChange, clientes = [], produtos = [], onSave }: VendaDialogProps) => {
   const [itens, setItens] = useState<ItemVenda[]>([]);
   const [produtoSelecionado, setProdutoSelecionado] = useState("");
   const [quantidade, setQuantidade] = useState(1);
+  const [clientesLocal, setClientesLocal] = useState(clientes);
+  const [produtosLocal, setProdutosLocal] = useState(produtos);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchIfNeeded = async () => {
+      try {
+        const api = (await import('@/lib/api')).apiFetch;
+        if ((!clientes || clientes.length === 0) && (!clientesLocal || clientesLocal.length === 0)) {
+          const data = await api('/clientes/').catch(() => []);
+          if (mounted) setClientesLocal(data || []);
+        }
+
+        if ((!produtos || produtos.length === 0) && (!produtosLocal || produtosLocal.length === 0)) {
+          const data = await api('/produtos/').catch(() => []);
+          if (mounted) setProdutosLocal(data || []);
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Erro ao carregar clientes ou produtos');
+      }
+    };
+
+    fetchIfNeeded();
+    return () => { mounted = false; };
+  }, []);
 
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<VendaFormData>({
     resolver: zodResolver(vendaSchema),
   });
 
+  // Register non-input fields so react-hook-form includes them in submit data
+  useEffect(() => {
+    register('cliente');
+    register('formaPagamento');
+  }, [register]);
+
   const cliente = watch("cliente");
   const formaPagamento = watch("formaPagamento");
 
   const adicionarItem = () => {
-    const produto = produtos.find(p => p.id.toString() === produtoSelecionado);
+    const produto = produtosLocal.find(p => p.id.toString() === produtoSelecionado);
     if (!produto) {
       toast.error("Selecione um produto");
       return;
@@ -60,8 +93,9 @@ export const VendaDialog = ({ open, onOpenChange, clientes, produtos, onSave }: 
       return;
     }
 
-    if (quantidade > produto.estoque) {
-      toast.error(`Estoque insuficiente! Disponível: ${produto.estoque}`);
+    const estoqueNumero = Number(produto.estoque);
+    if (quantidade > estoqueNumero) {
+      toast.error(`Estoque insuficiente! Disponível: ${estoqueNumero}`);
       return;
     }
 
@@ -71,12 +105,13 @@ export const VendaDialog = ({ open, onOpenChange, clientes, produtos, onSave }: 
       return;
     }
 
+    const precoNumero = Number(produto.preco);
     const novoItem: ItemVenda = {
       produtoId: produto.id.toString(),
       produtoNome: produto.descricao,
       quantidade,
-      precoUnitario: produto.preco,
-      subtotal: produto.preco * quantidade,
+      precoUnitario: precoNumero,
+      subtotal: precoNumero * quantidade,
     };
 
     setItens([...itens, novoItem]);
@@ -125,7 +160,7 @@ export const VendaDialog = ({ open, onOpenChange, clientes, produtos, onSave }: 
                   <SelectValue placeholder="Selecione um cliente..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {clientes.map((c) => (
+                  {clientesLocal.map((c) => (
                     <SelectItem key={c.id} value={c.id.toString()}>
                       {c.nome}
                     </SelectItem>
@@ -168,9 +203,9 @@ export const VendaDialog = ({ open, onOpenChange, clientes, produtos, onSave }: 
                     <SelectValue placeholder="Selecione um produto..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {produtos.map((p) => (
+                    {produtosLocal.map((p) => (
                       <SelectItem key={p.id} value={p.id.toString()}>
-                        {p.descricao} - R$ {p.preco.toFixed(2)} (Est: {p.estoque})
+                        {p.descricao} - R$ {Number(p.preco).toFixed(2)} (Est: {p.estoque})
                       </SelectItem>
                     ))}
                   </SelectContent>
