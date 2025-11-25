@@ -62,12 +62,51 @@ class VendaCreateUpdateSerializer(serializers.ModelSerializer):
             # fallback to raw request body
             cliente_id = raw.get('cliente') or raw.get('cliente_id')
 
+        # Coerce cliente_id if frontend provided an object/dict
+        if isinstance(cliente_id, dict):
+            cliente_id = cliente_id.get('id')
+        if hasattr(cliente_id, 'id'):
+            try:
+                cliente_id = int(getattr(cliente_id, 'id'))
+            except Exception:
+                cliente_id = None
+        # try convert string/number to int
+        if cliente_id is not None:
+            try:
+                cliente_id = int(cliente_id)
+            except Exception:
+                cliente_id = None
+
         # Accept either 'funcionario_id' or 'funcionario'
         funcionario_id = validated_data.pop('funcionario_id', None)
         if funcionario_id is None:
             funcionario_id = validated_data.pop('funcionario', None)
         if funcionario_id is None:
             funcionario_id = raw.get('funcionario') or raw.get('funcionario_id')
+
+        # Coerce funcionario_id if frontend provided an object/dict
+        if isinstance(funcionario_id, dict):
+            funcionario_id = funcionario_id.get('id')
+        if hasattr(funcionario_id, 'id'):
+            try:
+                funcionario_id = int(getattr(funcionario_id, 'id'))
+            except Exception:
+                funcionario_id = None
+
+        # If still missing, attempt to infer from the authenticated user
+        if funcionario_id is None:
+            request = self.context.get('request')
+            if request and hasattr(request, 'user') and hasattr(request.user, 'funcionario'):
+                try:
+                    funcionario_id = int(request.user.funcionario.id)
+                except Exception:
+                    funcionario_id = None
+        else:
+            # try convert string/number to int
+            try:
+                funcionario_id = int(funcionario_id)
+            except Exception:
+                pass
 
         # Accept camelCase 'formaPagamento' or snake_case 'forma_pagamento'
         if 'formaPagamento' in raw and 'forma_pagamento' not in validated_data:
