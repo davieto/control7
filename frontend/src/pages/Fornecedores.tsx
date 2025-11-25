@@ -41,7 +41,7 @@ const Fornecedores = () => {
     carregarFornecedores();
   }, []);
 
-  // ✅ SALVAR (criar ou editar)
+  // SALVAR (criar ou editar)
   const handleSave = async (data: any) => {
     try {
       if (editingFornecedor) {
@@ -70,13 +70,13 @@ const Fornecedores = () => {
     }
   };
 
-  // ✅ ABRIR MODAL DE EDIÇÃO
+  
   const handleEdit = (fornecedor: any) => {
     setEditingFornecedor(fornecedor);
     setDialogOpen(true);
   };
 
-  // ✅ NOVO
+  
   const handleNew = () => {
     setEditingFornecedor(null);
     setDialogOpen(true);
@@ -93,7 +93,7 @@ const handleDelete = async (id: number) => {
     // Atualiza a lista local imediatamente (experiência rápida)
     setFornecedores((prev) => prev.filter((f) => f.id !== id));
 
-    // Espera um pouquinho e recarrega a tela inteira 👇
+    // Espera um pouquinho e recarrega a tela inteira 
     setTimeout(() => {
       window.location.reload();
     }, 500);
@@ -152,9 +152,16 @@ const handleDelete = async (id: number) => {
                 </TableHeader>
                 <TableBody>
                   {fornecedores
-                    .filter((f) =>
-                      f.nome.toLowerCase().includes(searchTerm.toLowerCase())
-                    )
+                    .filter((f) => {
+                      const q = searchTerm.toLowerCase();
+                      return (
+                        (f.nome || "").toLowerCase().includes(q) ||
+                        (f.cnpj || "").toLowerCase().includes(q) ||
+                        (f.contato_comercial || "").toLowerCase().includes(q) ||
+                        (f.telefone || "").toLowerCase().includes(q) ||
+                        (f.email || "").toLowerCase().includes(q)
+                      );
+                    })
                     .map((fornecedor) => (
                       <TableRow
                         key={fornecedor.id}

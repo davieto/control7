@@ -1,27 +1,43 @@
 import React, { createContext, useEffect, useState, ReactNode } from "react"; 
 // REMOVIDO: import { useNavigate } from "react-router-dom"; <--- REMOVIDO
 
+// 1. Adicionei 'loading' na tipagem
 type AuthContextType = {
   isAuthenticated: boolean;
+  loading: boolean; 
   login: (accessToken: string, refreshToken?: string) => void;
   logout: () => void;
 };
 
 export const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
+  loading: true, // Valor padrão inicial
   login: () => {},
   logout: () => {},
 });
 
-// Tipagem correta para o children
-export function AuthProvider({ children }: { children: ReactNode }) { 
-  // Padronizado: Busca por 'access_token'
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem("access_token"));
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const navigate = useNavigate();
   
-  // REMOVIDO: const navigate = useNavigate(); <--- REMOVIDO
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // 2. Estado de carregamento começa como TRUE
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setIsAuthenticated(!!localStorage.getItem("access_token"));
+    // Verifica o token ao montar o componente
+    const recuperarToken = () => {
+      const token = localStorage.getItem("token");
+      
+      if (token) {
+        // Aqui você poderia validar o token com a API se quisesse
+        setIsAuthenticated(true);
+      }
+      
+      // 3. Finaliza o carregamento (seja logado ou não)
+      setLoading(false);
+    };
+
+    recuperarToken();
   }, []);
 
   function login(accessToken: string, refreshToken?: string) {
@@ -31,19 +47,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (refreshToken) localStorage.setItem("refresh_token", refreshToken);
     
     setIsAuthenticated(true);
-    // REMOVIDO: navigate("/"); <--- REMOVIDO
+    navigate("/"); // Redireciona para o Dashboard
   }
 
   function logout() {
     // Padronizado: Remove os tokens
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user_nivel"); // Limpa o cache da sidebar tb
+    localStorage.removeItem("user_nome");
+    
     setIsAuthenticated(false);
     // REMOVIDO: navigate("/login"); <--- REMOVIDO
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

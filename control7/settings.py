@@ -40,12 +40,11 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
 
     # Apps do projeto:
+    'apps.clientes',
     'apps.funcionarios',
     'apps.fornecedores',
     'apps.produtos',
     'apps.configuracao',
-    'apps.clientes',
-    'apps.dashboard',
     'apps.vendas',
     #'apps.relatorios',
 ]

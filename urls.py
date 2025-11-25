@@ -8,6 +8,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from apps.vendas.views import VendaViewSet
 
 # 🎯 IMPORTAÇÕES NECESSÁRIAS PARA O ROUTER
 from rest_framework.routers import DefaultRouter
@@ -33,22 +34,19 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('', RedirectView.as_view(url='swagger/', permanent=False)),
     path('admin/', admin.site.urls),
-    
-    # 🎯 1. CORREÇÃO PRINCIPAL: Inclui o router com o prefixo 'api/'.
-    path('api/', include(router.urls)), 
-    
-    # 2. As demais rotas que usam o mesmo prefixo 'api/' devem ter o prefixo 'api/' removido do path()
-    # E o arquivo de urls interno (do app) DEVE começar com a rota, sem o "api/".
+    #Fornecedores
+    path('api/', include('apps.fornecedores.urls')),
+    #Funcionarios
+    path('api/', include('apps.funcionarios.urls')),
+    #Produtos
+    path('api/', include('apps.produtos.urls')),
+    # Vendas
+    path('api/', include('apps.vendas.urls')),
 
-    # Exemplo: Se apps/fornecedores/urls.py contém 'path("fornecedores/", ...)', então use:
-    path('api/', include('apps.fornecedores.urls')), # Mantenha por enquanto
-    path('api/', include('apps.funcionarios.urls')), # Mantenha por enquanto
-    path('api/', include('apps.produtos.urls')), # Mantenha por enquanto
-    
-    # Dashboard (corrigido para não duplicar o 'api/')
-    path('api/dashboard/', include('apps.dashboard.urls')),
-    
-    # Configuração: Se for uma view específica, pode gerar conflito com path('api/', include(...))
+    # Explicit endpoints for vendas (fallback)
+    path('api/vendas/', VendaViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('api/vendas/<int:pk>/', VendaViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'})),
+    #Configuracao
     path("api/", include("apps.configuracao.urls")),
     
     # URLs de JWT Auth Endpoints (mantenha a sintaxe atual)

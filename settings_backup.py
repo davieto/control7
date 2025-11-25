@@ -1,8 +1,7 @@
+
 from pathlib import Path
 import environ
 import os
-# Adicione esta importação para definir o tempo de vida do token
-from datetime import timedelta 
 
 # ---------------------------------------------------------------
 # Diretório base do projeto
@@ -38,8 +37,6 @@ INSTALLED_APPS = [
     'drf_yasg',    
     'rest_framework.authtoken',
     'corsheaders',
-    # 🎯 INSTALAÇÃO CORRETA do Simple JWT
-    'rest_framework_simplejwt', 
 
     # Apps do projeto:
     'apps.clientes',
@@ -124,27 +121,3 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# ---------------------------------------------------------------
-# Configurações JWT (JSON Web Token) - ADICIONADO PARA CORRIGIR O 401
-# ---------------------------------------------------------------
-SIMPLE_JWT = {
-    # 🎯 CORREÇÃO: Força o uso da SECRET_KEY principal para assinar o token
-    'SIGNING_KEY': SECRET_KEY, 
-    
-    # Tempo de vida dos tokens
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60), 
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),    
-
-    # Algoritmo padrão
-    'ALGORITHM': 'HS256',
-    
-    'AUTH_HEADER_TYPES': ('Bearer',),
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-    'USER_ID_FIELD': 'id',
-    'USER_ID_CLAIM': 'user_id',
-    'JTI_CLAIM': 'jti',
-    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
-    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
-    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
-}

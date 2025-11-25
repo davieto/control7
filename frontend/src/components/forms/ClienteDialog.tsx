@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -35,10 +35,26 @@ interface ClienteDialogProps {
 }
 
 export const ClienteDialog = ({ open, onOpenChange, cliente, onSave }: ClienteDialogProps) => {
-  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<ClienteFormData>({
+  const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<ClienteFormData>({
     resolver: zodResolver(clienteSchema),
     defaultValues: cliente || {},
   });
+
+  // When `cliente` prop changes (editing), reset the form values so fields are pre-filled
+  useEffect(() => {
+    if (cliente) {
+      // Ensure we set formatted values into the form where appropriate
+      const initial = { ...cliente };
+      // if cpf/telefone/celular/cep may be null, keep as empty string
+      initial.cpf = initial.cpf || "";
+      initial.telefone = initial.telefone || "";
+      initial.celular = initial.celular || "";
+      initial.cep = initial.cep || "";
+      reset(initial);
+    } else {
+      reset();
+    }
+  }, [cliente, reset]);
 
   const cpf = watch("cpf");
   const telefone = watch("telefone");

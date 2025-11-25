@@ -21,22 +21,29 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     ...options,
     headers: headers,
   });
-
   if (!res.ok) {
     let errorData;
-
+    // clone response to safely read body multiple ways
+    const cloned = res.clone();
     try {
-      errorData = await res.json();
+      // Tenta ler como JSON
+      errorData = await cloned.json();
     } catch {
-      const text = await res.text();
-      errorData = { detail: text || `Erro HTTP ${res.status}` };
+      // Se falhar (não é JSON), lê como texto
+      try {
+        const text = await cloned.text();
+        errorData = { detail: text || `Erro HTTP ${res.status}` };
+      } catch {
+        errorData = { detail: `Erro HTTP ${res.status}` };
+      }
     }
 
+    // Lança o erro em formato consistente
     throw {
       response: {
         status: res.status,
-        data: errorData
-      }
+        data: errorData,
+      },
     };
   }
 
