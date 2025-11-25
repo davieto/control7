@@ -116,11 +116,7 @@ const Clientes = () => {
             <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-<<<<<<< HEAD
                 placeholder="Buscar por nome, CPF ou email..."
-=======
-                placeholder="Buscar por nome, CNPJ ou email..."
->>>>>>> main
                 className="pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -134,13 +130,8 @@ const Clientes = () => {
                 <TableHeader>
                   <TableRow className="bg-muted/50">
                     <TableHead>Nome</TableHead>
-<<<<<<< HEAD
                     <TableHead>CPF</TableHead>
                     <TableHead>Celular</TableHead>
-=======
-                    <TableHead>CNPJ</TableHead>
-                    <TableHead>Contato</TableHead>
->>>>>>> main
                     <TableHead>Email</TableHead>
                     <TableHead>Telefone</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
@@ -153,24 +144,15 @@ const Clientes = () => {
                       return (
                         c.nome?.toLowerCase().includes(term) ||
                         (c.email || "").toLowerCase().includes(term) ||
-<<<<<<< HEAD
                         (c.cpf || "").toLowerCase().includes(term) ||
                         (c.celular || "").toLowerCase().includes(term)
-=======
-                        (c.cnpj || "").includes(term)
->>>>>>> main
                       );
                     })
                     .map((cliente) => (
                       <TableRow key={cliente.id} className="hover:bg-muted/30 transition-colors">
                         <TableCell className="font-medium">{cliente.nome}</TableCell>
-<<<<<<< HEAD
                         <TableCell className="font-mono">{cliente.cpf}</TableCell>
                         <TableCell>{cliente.celular || cliente.contato_comercial}</TableCell>
-=======
-                        <TableCell className="font-mono">{cliente.cnpj}</TableCell>
-                        <TableCell>{cliente.contato_comercial}</TableCell>
->>>>>>> main
                         <TableCell>{cliente.email}</TableCell>
                         <TableCell>{cliente.telefone}</TableCell>
                         <TableCell className="text-right">
