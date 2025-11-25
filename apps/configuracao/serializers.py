@@ -27,10 +27,12 @@ class UsuarioSerializer(serializers.ModelSerializer):
     # Campos do funcionário (apenas visualização ou via update)
     cpf = serializers.CharField(source="funcionario.cpf", required=False, read_only=True)
     telefone = serializers.CharField(source="funcionario.telefone", required=False, read_only=True)
+    # Fornece um bloco com informações básicas do funcionário vinculado ao usuário
+    funcionario = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "first_name", "cpf", "telefone", "cargo", "nivel_acesso"]
+        fields = ["id", "username", "email", "first_name", "cpf", "telefone", "cargo", "nivel_acesso", "funcionario"]
         read_only_fields = ["id", "username"]
 
     # 1. Lógica para liberar menu para o Admin
@@ -99,6 +101,22 @@ class UsuarioSerializer(serializers.ModelSerializer):
                 funcionario.save()
 
         return instance
+
+    def get_funcionario(self, obj):
+        """
+        Retorna informações mínimas do funcionário vinculado para o frontend.
+        Ex.: {"id": 3, "nome": "Fulano", "nivel_acesso": "Vendedor"}
+        """
+        if not hasattr(obj, "funcionario") or obj.funcionario is None:
+            return None
+
+        f = obj.funcionario
+        return {
+            "id": f.id,
+            "nome": getattr(f, "nome", None) or getattr(f, "full_name", None) or obj.first_name,
+            "nivel_acesso": getattr(f, "nivel_acesso", None),
+            "cargo": getattr(f, "cargo", None),
+        }
 
 
 # --------------------------
