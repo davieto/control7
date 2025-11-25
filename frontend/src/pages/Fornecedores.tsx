@@ -152,9 +152,22 @@ const handleDelete = async (id: number) => {
                 </TableHeader>
                 <TableBody>
                   {fornecedores
+<<<<<<< HEAD
+                    .filter((f) => {
+                      const q = searchTerm.toLowerCase();
+                      return (
+                        (f.nome || "").toLowerCase().includes(q) ||
+                        (f.cnpj || "").toLowerCase().includes(q) ||
+                        (f.contato_comercial || "").toLowerCase().includes(q) ||
+                        (f.telefone || "").toLowerCase().includes(q) ||
+                        (f.email || "").toLowerCase().includes(q)
+                      );
+                    })
+=======
                     .filter((f) =>
                       f.nome.toLowerCase().includes(searchTerm.toLowerCase())
                     )
+>>>>>>> main
                     .map((fornecedor) => (
                       <TableRow
                         key={fornecedor.id}
