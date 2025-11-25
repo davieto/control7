@@ -13,6 +13,8 @@ class Cliente(models.Model):
         help_text="Digite o CPF no formato 000.000.000-00"
     )
 
+    rg = models.CharField(max_length=20, blank=True, null=True)
+
     contato_comercial = models.CharField(max_length=100, blank=True, null=True)
 
     email = models.EmailField(
